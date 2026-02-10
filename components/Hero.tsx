@@ -2,8 +2,10 @@ import React from 'react';
 import { Button } from './Button';
 import { WHATSAPP_LINK } from '../constants';
 import { MessageCircle, Star } from 'lucide-react';
+import { useChatbot } from '../App';
 
 export const Hero: React.FC = () => {
+  const { openChatbot } = useChatbot();
   return (
     <div className="relative bg-gray-900 h-[90vh] min-h-[600px] flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -31,7 +33,7 @@ export const Hero: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <Button href={WHATSAPP_LINK} external variant="whatsapp" className="gap-2">
+            <Button onClick={openChatbot} variant="whatsapp" className="gap-2">
               <MessageCircle className="w-5 h-5" />
               Book on WhatsApp
             </Button>

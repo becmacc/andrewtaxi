@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
-import { NAV_ITEMS, WHATSAPP_LINK } from '../constants';
+import { NAV_ITEMS } from '../constants';
 import { Logo } from './Logo';
+import { useChatbot } from '../App';
 
 export const Header: React.FC = () => {
+  const { openChatbot } = useChatbot();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -44,15 +46,13 @@ export const Header: React.FC = () => {
                 {item.label}
               </a>
             ))}
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={openChatbot}
               className="bg-[#25D366] hover:bg-[#20bd5a] text-white px-5 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2"
             >
               <Phone className="w-4 h-4" />
               Book on WhatsApp
-            </a>
+            </button>
           </nav>
 
           {/* Mobile menu button */}
@@ -85,15 +85,16 @@ export const Header: React.FC = () => {
             </a>
           ))}
           <div className="pt-4">
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white px-4 py-3 rounded-lg font-semibold"
+            <button
+              onClick={() => {
+                openChatbot();
+                setIsOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#20bd5a] transition-colors"
             >
               <Phone className="w-5 h-5" />
               Book on WhatsApp
-            </a>
+            </button>
           </div>
         </div>
       </div>

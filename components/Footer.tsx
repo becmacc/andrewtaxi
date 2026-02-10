@@ -1,9 +1,11 @@
 import React from 'react';
 import { Phone, Mail, MapPin, Facebook, Instagram, Map } from 'lucide-react';
-import { PHONE_NUMBER, EMAIL, WHATSAPP_LINK, GOOGLE_MAPS_LINK } from '../constants';
+import { PHONE_NUMBER, EMAIL, GOOGLE_MAPS_LINK } from '../constants';
 import { Logo } from './Logo';
+import { useChatbot } from '../App';
 
 export const Footer: React.FC = () => {
+  const { openChatbot } = useChatbot();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -48,13 +50,13 @@ export const Footer: React.FC = () => {
             <h3 className="text-white font-semibold text-lg mb-6">Contact Us</h3>
             <ul className="space-y-4">
               <li>
-                <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 hover:text-white transition-colors group">
+                <button onClick={openChatbot} className="w-full flex items-start gap-3 hover:text-white transition-colors group text-left">
                   <Phone className="w-5 h-5 text-taxi-yellow mt-1 group-hover:scale-110 transition-transform" />
                   <span>
-                    <span className="block text-white font-medium">Call or WhatsApp</span>
+                    <span className="block text-white font-medium">Book on WhatsApp</span>
                     {PHONE_NUMBER}
                   </span>
-                </a>
+                </button>
               </li>
               <li>
                 <a href={`mailto:${EMAIL}`} className="flex items-start gap-3 hover:text-white transition-colors group">

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useRef, createContext, useContext } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
@@ -7,28 +7,42 @@ import { HowItWorks } from './components/HowItWorks';
 import { Testimonials } from './components/Testimonials';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/WhatsAppButton';
-import { ChatbotBooking } from './components/ChatbotBooking';
+import { ChatbotBooking, ChatbotRef } from './components/ChatbotBooking';
 
 const FareEstimator = lazy(() => import('./components/FareEstimator').then(m => ({ default: m.FareEstimator })));
 
+export const ChatbotContext = createContext<{ openChatbot: () => void } | null>(null);
+
+export const useChatbot = () => {
+  const context = useContext(ChatbotContext);
+  if (!context) {
+    throw new Error('useChatbot must be used within ChatbotProvider');
+  }
+  return context;
+};
+
 function App() {
+  const chatbotRef = useRef<ChatbotRef>(null);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main>
-        <Hero />
-        <Services />
-        <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
-          <FareEstimator />
-        </Suspense>
-        <Features />
-        <HowItWorks />
-        <Testimonials />
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <ChatbotBooking />
-    </div>
+    <ChatbotContext.Provider value={{ openChatbot: () => chatbotRef.current?.open() }}>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main>
+          <Hero />
+          <Services />
+          <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
+            <FareEstimator />
+          </Suspense>
+          <Features />
+          <HowItWorks />
+          <Testimonials />
+        </main>
+        <Footer />
+        <WhatsAppButton />
+        <ChatbotBooking ref={chatbotRef} />
+      </div>
+    </ChatbotContext.Provider>
   );
 }
 

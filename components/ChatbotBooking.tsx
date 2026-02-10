@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { X } from 'lucide-react';
 import { GOOGLE_MAPS_API_KEY, PHONE_NUMBER, BOOKING_PRICES } from '../constants';
 
-interface Message {
-  id: string;
-  type: 'user' | 'bot';
-  content: string;
-  timestamp: Date;
+// Declare google types
+declare global {
+  interface Window {
+    google: any;
+  }
 }
 
 interface BookingData {
@@ -18,42 +18,110 @@ interface BookingData {
   preferences?: string;
   datetime?: string;
   fare?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
-type ConversationStep = 'greeting' | 'pickup' | 'dropoff' | 'passengers' | 'preferences' | 'datetime' | 'confirm';
+type ConversationStep = 'pickup' | 'dropoff' | 'passengers' | 'preferences' | 'datetime' | 'name' | 'email' | 'phone' | 'confirm';
 
-export const ChatbotBooking: React.FC = () => {
+export interface ChatbotRef {
+  open: () => void;
+}
+
+export const ChatbotBooking = React.forwardRef<ChatbotRef>((_, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      content: 'Welcome to Andrew\'s Taxi! 👋 Where are you traveling from today?',
-      timestamp: new Date(),
-    },
-  ]);
+  const [currentStep, setCurrentStep] = useState<ConversationStep>('pickup');
+  const [bookingData, setBookingData] = useState<BookingData>({});
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<ConversationStep>('pickup');
-  const [bookingData, setBookingData] = useState<BookingData>({});
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.AutocompleteService | null>(null);
   const distanceMatrixServiceRef = useRef<google.maps.DistanceMatrixService | null>(null);
 
-  // Initialize Google Maps services
-  useEffect(() => {
-    if (isOpen && !placesServiceRef.current && GOOGLE_MAPS_API_KEY) {
-      const mapDiv = document.createElement('div');
-      const map = new google.maps.Map(mapDiv);
-      placesServiceRef.current = new google.maps.places.PlacesService(map);
-      distanceMatrixServiceRef.current = new google.maps.DistanceMatrixService();
-    }
-  }, [isOpen]);
+  // Expose open method to parent components
+  React.useImperativeHandle(ref, () => ({
+    open: () => {
+      setIsOpen(true);
+      setCurrentStep('pickup');
+      setBookingData({});
+      setInput('');
+    },
+  }));
 
-  // Auto-scroll to bottom
+  // Load Google Maps script (same as FareEstimator)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // Check if Maps is already loaded
+    if (window.google?.maps?.places) {
+      setScriptLoaded(true);
+      return;
+    }
+
+    // Check if script is already loading
+    const scriptId = 'google-maps-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+    if (script) {
+      script.addEventListener('load', () => setScriptLoaded(true));
+      return;
+    }
+
+    // Create and append new script
+    script = document.createElement('script');
+    script.id = scriptId;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setScriptLoaded(true);
+    document.head.appendChild(script);
+  }, []);
+
+  // Initialize Google Maps services when script is ready
+  useEffect(() => {
+    if (!scriptLoaded || !isOpen) return;
+
+    if (!autocompleteRef.current && window.google?.maps?.places) {
+      try {
+        autocompleteRef.current = new google.maps.places.AutocompleteService();
+        distanceMatrixServiceRef.current = new google.maps.DistanceMatrixService();
+      } catch (error) {
+        console.error('Failed to initialize services:', error);
+      }
+    }
+  }, [scriptLoaded, isOpen]);
+
+  // Handle autocomplete suggestions for pickup/dropoff
+  useEffect(() => {
+    if ((currentStep !== 'pickup' && currentStep !== 'dropoff') || !input.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (!autocompleteRef.current) {
+      return;
+    }
+
+    const getAutocomplete = () => {
+      autocompleteRef.current!.getPlacePredictions(
+        {
+          input,
+          componentRestrictions: { country: 'lb' },
+        },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setSuggestions(predictions);
+          } else {
+            setSuggestions([]);
+          }
+        }
+      );
+    };
+
+    const debounceTimer = setTimeout(getAutocomplete, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [input, currentStep]);
 
   const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
     try {
@@ -99,35 +167,25 @@ export const ChatbotBooking: React.FC = () => {
     }
   };
 
-  const handleUserInput = async () => {
+  const handleNext = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setIsLoading(true);
-
-    let botResponse = '';
-    let nextStep = step;
+    let nextStep = currentStep;
     let updatedBookingData = { ...bookingData };
+    let errorMsg = '';
 
     try {
-      switch (step) {
+      switch (currentStep) {
         case 'pickup': {
           const coords = await geocodeAddress(input);
           if (coords) {
             updatedBookingData.pickup = input;
             updatedBookingData.pickupCoords = coords;
-            botResponse = `Great! Pickup at ${input}. 📍\n\nWhere would you like to go?`;
             nextStep = 'dropoff';
+            setSuggestions([]);
           } else {
-            botResponse = `Sorry, I couldn't find that location. Could you try a different address or landmark?`;
+            errorMsg = 'Location not found. Try another address.';
           }
           break;
         }
@@ -143,11 +201,10 @@ export const ChatbotBooking: React.FC = () => {
               const fare = await calculateFare(updatedBookingData.pickupCoords, updatedBookingData.dropoffCoords);
               updatedBookingData.fare = fare || 0;
             }
-
-            botResponse = `Perfect! Dropoff at ${input}. 📍\n\nEstimated fare: $${updatedBookingData.fare?.toFixed(2) || 'TBD'}\n\nHow many passengers?`;
             nextStep = 'passengers';
+            setSuggestions([]);
           } else {
-            botResponse = `Sorry, I couldn't find that location. Could you try a different address or landmark?`;
+            errorMsg = 'Location not found. Try another address.';
           }
           break;
         }
@@ -156,145 +213,203 @@ export const ChatbotBooking: React.FC = () => {
           const num = parseInt(input);
           if (num > 0 && num <= 8) {
             updatedBookingData.passengers = num;
-            botResponse = `${num} passenger${num > 1 ? 's' : ''} noted. ✓\n\nAny special preferences? (e.g., "AC preferred", "quiet ride", or "skip" to continue)`;
             nextStep = 'preferences';
           } else {
-            botResponse = `Please enter a number between 1 and 8 passengers.`;
+            errorMsg = 'Please enter 1-8 passengers.';
           }
           break;
         }
 
         case 'preferences': {
-          if (input.toLowerCase() !== 'skip') {
-            updatedBookingData.preferences = input;
-          }
-          botResponse = `Got it! ✓\n\nWhen do you need the ride? (e.g., "now", "in 30 minutes", "tomorrow at 3pm")`;
+          updatedBookingData.preferences = input === 'skip' ? '' : input;
           nextStep = 'datetime';
           break;
         }
 
         case 'datetime': {
           updatedBookingData.datetime = input;
-          botResponse = `Perfect! Let me confirm your booking:\n\n📍 Pickup: ${updatedBookingData.pickup}\n📍 Dropoff: ${updatedBookingData.dropoff}\n👥 Passengers: ${updatedBookingData.passengers}\n${updatedBookingData.preferences ? `✨ Preferences: ${updatedBookingData.preferences}\n` : ''}🕒 Time: ${input}\n💰 Est. Fare: $${updatedBookingData.fare?.toFixed(2)}\n\nReply "confirm" to book or "cancel" to start over.`;
+          nextStep = 'name';
+          break;
+        }
+
+        case 'name': {
+          updatedBookingData.name = input;
+          nextStep = 'email';
+          break;
+        }
+
+        case 'email': {
+          updatedBookingData.email = input;
+          nextStep = 'phone';
+          break;
+        }
+
+        case 'phone': {
+          updatedBookingData.phone = input;
           nextStep = 'confirm';
           break;
         }
+      }
 
-        case 'confirm': {
-          if (input.toLowerCase() === 'confirm') {
-            const bookingSummary = `Booking Summary:\nFrom: ${updatedBookingData.pickup}\nTo: ${updatedBookingData.dropoff}\nPassengers: ${updatedBookingData.passengers}\n${updatedBookingData.preferences ? `Preferences: ${updatedBookingData.preferences}\n` : ''}Time: ${updatedBookingData.datetime}\nEst. Fare: $${updatedBookingData.fare?.toFixed(2)}`;
-            
-            // Send to WhatsApp
-            const whatsappMessage = encodeURIComponent(
-              `Hi Andrew's Taxi! I'd like to book a ride.\n\n${bookingSummary}`
-            );
-            window.open(
-              `https://wa.me/${PHONE_NUMBER}?text=${whatsappMessage}`,
-              '_blank'
-            );
-
-            botResponse = `✅ Booking confirmed! Opening WhatsApp to finalize your ride. See you soon! 🚕`;
-            nextStep = 'greeting';
-            updatedBookingData = {};
-          } else if (input.toLowerCase() === 'cancel') {
-            botResponse = `Booking cancelled. Where are you traveling from today?`;
-            nextStep = 'pickup';
-            updatedBookingData = {};
-          } else {
-            botResponse = `Please reply "confirm" to complete the booking or "cancel" to start over.`;
-          }
-          break;
-        }
+      if (errorMsg) {
+        alert(errorMsg);
+      } else {
+        setBookingData(updatedBookingData);
+        setCurrentStep(nextStep);
+        setInput('');
       }
     } catch (error) {
-      console.error('Chat error:', error);
-      botResponse = 'Sorry, something went wrong. Please try again.';
+      console.error('Error:', error);
+      alert('Something went wrong. Please try again.');
     }
 
-    setBookingData(updatedBookingData);
-    setStep(nextStep);
-
-    const botMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      type: 'bot',
-      content: botResponse,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, botMessage]);
     setIsLoading(false);
   };
 
-  const handleSendClick = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleUserInput();
+  const handleSuggestionClick = (suggestion: google.maps.places.AutocompletePrediction) => {
+    setInput(suggestion.description);
+    setSuggestions([]);
+  };
+
+  const handleConfirm = () => {
+    const message = `*Andrew's Taxi Booking Request*\n\n📍 *Pickup:* ${bookingData.pickup}\n📍 *Dropoff:* ${bookingData.dropoff}\n👥 *Passengers:* ${bookingData.passengers}\n${bookingData.preferences ? `✨ *Preferences:* ${bookingData.preferences}\n` : ''}🕒 *Time:* ${bookingData.datetime}\n💰 *Estimated Fare:* $${bookingData.fare?.toFixed(2)}\n\n*Customer Info:*\nName: ${bookingData.name}\nEmail: ${bookingData.email}\nPhone: ${bookingData.phone}`;
+
+    const whatsappMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${PHONE_NUMBER.replace(/\D/g, '')}?text=${whatsappMessage}`, '_blank');
+    
+    setIsOpen(false);
+  };
+
+  const getTitle = () => {
+    switch (currentStep) {
+      case 'pickup': return 'Where are you starting from?';
+      case 'dropoff': return 'Where are you going?';
+      case 'passengers': return 'How many passengers?';
+      case 'preferences': return 'Any preferences? (or type "skip")';
+      case 'datetime': return 'When do you need the ride?';
+      case 'name': return 'Your full name?';
+      case 'email': return 'Your email?';
+      case 'phone': return 'Your phone number?';
+      case 'confirm': return 'Confirm your booking';
+      default: return '';
+    }
   };
 
   if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-taxi-yellow hover:bg-yellow-500 text-taxi-dark rounded-full p-4 shadow-lg z-40 transition-transform hover:scale-110"
-        aria-label="Open chat"
-      >
-        <MessageCircle size={24} />
-      </button>
-    );
+    return null;
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-96 h-96 bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
-      {/* Header */}
-      <div className="bg-taxi-dark text-white p-4 rounded-t-lg flex justify-between items-center">
-        <h3 className="font-bold text-lg">Andrew's Taxi Booking</h3>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="hover:bg-white/20 p-1 rounded transition-colors"
-          aria-label="Close chat"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md">
+        {/* Header */}
+        <div className="bg-taxi-dark text-white p-6 rounded-t-lg flex justify-between items-center">
+          <h3 className="font-bold text-xl">Andrew's Taxi</h3>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="hover:bg-white/20 p-1 rounded transition-colors"
+            aria-label="Close"
           >
-            <div
-              className={`max-w-xs px-4 py-2 rounded-lg ${
-                msg.type === 'user'
-                  ? 'bg-taxi-yellow text-taxi-dark'
-                  : 'bg-white border border-gray-300 text-gray-800'
-              } whitespace-pre-wrap text-sm`}
-            >
-              {msg.content}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+            <X size={24} />
+          </button>
+        </div>
 
-      {/* Input */}
-      <form onSubmit={handleSendClick} className="border-t border-gray-200 p-4 bg-white rounded-b-lg flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          disabled={isLoading}
-          placeholder="Type your message..."
-          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-taxi-yellow disabled:bg-gray-100"
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          className="bg-taxi-yellow hover:bg-yellow-500 text-taxi-dark rounded px-4 py-2 disabled:opacity-50 transition-colors flex items-center gap-2"
-        >
-          {isLoading ? <div className="w-4 h-4 border-2 border-taxi-dark border-t-transparent rounded-full animate-spin" /> : <Send size={18} />}
-        </button>
-      </form>
+        {/* Content */}
+        <div className="p-6">
+          {currentStep === 'confirm' ? (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold mb-4">Confirm Your Booking</h2>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+                <p><strong>Pickup:</strong> {bookingData.pickup}</p>
+                <p><strong>Dropoff:</strong> {bookingData.dropoff}</p>
+                <p><strong>Passengers:</strong> {bookingData.passengers}</p>
+                {bookingData.preferences && <p><strong>Preferences:</strong> {bookingData.preferences}</p>}
+                <p><strong>Time:</strong> {bookingData.datetime}</p>
+                <p className="text-lg font-bold text-taxi-yellow">Fare: ${bookingData.fare?.toFixed(2)}</p>
+                <hr className="my-2" />
+                <p><strong>Name:</strong> {bookingData.name}</p>
+                <p><strong>Email:</strong> {bookingData.email}</p>
+                <p><strong>Phone:</strong> {bookingData.phone}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCurrentStep('pickup')}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-bold"
+                >
+                  Send to WhatsApp
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold">{getTitle()}</h2>
+              <div className="relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && handleNext()}
+                  disabled={isLoading}
+                  placeholder="Type here..."
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-taxi-yellow disabled:bg-gray-100"
+                  autoComplete="off"
+                  autoFocus
+                />
+                {/* Autocomplete suggestions */}
+                {suggestions.length > 0 && (currentStep === 'pickup' || currentStep === 'dropoff') && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.25rem', backgroundColor: '#FEF3C7', border: '2px solid #EAB308', borderRadius: '0.5rem', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', maxHeight: '14rem', overflowY: 'auto', zIndex: 50 }}>
+                    {suggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '0.75rem 1rem',
+                          backgroundColor: '#FEF3C7',
+                          borderBottom: '1px solid #FCD34D',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FDE047'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEF3C7'}
+                      >
+                        <div style={{ fontWeight: 'bold', color: '#1F2937', fontSize: '1rem' }}>{suggestion.main_text}</div>
+                        <div style={{ color: '#374151', fontSize: '0.75rem', marginTop: '0.25rem' }}>{suggestion.secondary_text}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={isLoading || !input.trim()}
+                  className="flex-1 px-4 py-2 bg-taxi-yellow hover:bg-yellow-500 text-taxi-dark rounded-lg transition-colors font-bold disabled:opacity-50"
+                >
+                  {isLoading ? '...' : 'Next'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
-};
+});
+
+ChatbotBooking.displayName = 'ChatbotBooking';
