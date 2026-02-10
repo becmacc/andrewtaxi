@@ -5,7 +5,7 @@ interface LogoProps {
   variant?: 'light' | 'dark';
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = "h-12", variant = 'dark' }) => {
+export const Logo = React.memo(({ className = "h-12", variant = 'dark' }: LogoProps) => {
   const [imgError, setImgError] = useState(false);
 
   // Expects 'logo.png' (Main/Dark Text) and 'logo-white.png' (White Text) in the /public folder
@@ -17,6 +17,7 @@ export const Logo: React.FC<LogoProps> = ({ className = "h-12", variant = 'dark'
         src={imageSrc} 
         alt="Andrew's Taxi" 
         className={`${className} w-auto object-contain`}
+        decoding="async"
         onError={() => setImgError(true)}
       />
     );
@@ -51,4 +52,4 @@ export const Logo: React.FC<LogoProps> = ({ className = "h-12", variant = 'dark'
       </div>
     </div>
   );
-};
+});
