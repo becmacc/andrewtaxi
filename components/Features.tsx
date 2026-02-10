@@ -12,6 +12,7 @@ export const Features: React.FC = () => {
                <img 
                  src="/featured.jpeg" 
                  alt="Passenger enjoying a comfortable and safe ride"
+                 loading="lazy"
                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-6 sm:p-8">
