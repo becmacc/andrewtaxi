@@ -7,6 +7,7 @@ import { HowItWorks } from './components/HowItWorks';
 import { Testimonials } from './components/Testimonials';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { ChatbotBooking } from './components/ChatbotBooking';
 
 const FareEstimator = lazy(() => import('./components/FareEstimator').then(m => ({ default: m.FareEstimator })));
 
@@ -26,6 +27,7 @@ function App() {
       </main>
       <Footer />
       <WhatsAppButton />
+      <ChatbotBooking />
     </div>
   );
 }

@@ -20,6 +20,12 @@ export const PRICING_CONFIG = {
   ESTIMATE_VARIANCE: 0.12,    // 12% buffer
 };
 
+export const BOOKING_PRICES = {
+  BASE_FARE: 2.00,
+  RATE_PER_KM: 1.10,
+  MIN_FARE: 6.00,
+};
+
 export const NAV_ITEMS: NavigationItem[] = [
   { label: 'Services', href: '#services' },
   { label: 'Estimate Fare', href: '#fare-estimator' },
