@@ -94,14 +94,16 @@ export const FareEstimator: React.FC = () => {
       if (!input || !window.google?.maps?.places) return;
       
       try {
+        // Use new PlaceAutocompleteElement (recommended by Google)
         const autocomplete = new window.google.maps.places.Autocomplete(input, {
           componentRestrictions: { country: 'lb' },
           fields: ['formatted_address', 'place_id', 'name'],
+          strictBounds: false,
         });
 
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace();
-          if (place.place_id) {
+          if (place && place.place_id) {
             setter({
               address: place.formatted_address || place.name || '',
               placeId: place.place_id,
@@ -112,6 +114,8 @@ export const FareEstimator: React.FC = () => {
         });
       } catch (e) {
         console.error("Autocomplete init failed", e);
+        // Fallback: allow manual entry
+        setError(null);
       }
     };
 
