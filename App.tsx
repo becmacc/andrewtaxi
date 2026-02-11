@@ -8,6 +8,7 @@ import { Testimonials } from './components/Testimonials';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { ChatbotBooking, ChatbotRef } from './components/ChatbotBooking';
+import { SEO } from './components/SEO';
 
 const FareEstimator = lazy(() => import('./components/FareEstimator').then(m => ({ default: m.FareEstimator })));
 
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <ChatbotContext.Provider value={{ openChatbot: () => chatbotRef.current?.open() }}>
+      <SEO />
       <div className="min-h-screen bg-gray-50">
         <Header />
         <main>
