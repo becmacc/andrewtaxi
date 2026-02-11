@@ -33,7 +33,7 @@ function App() {
         <main>
           <Hero />
           {/* Gradient wrapper for content sections - creates visual depth and contrast */}
-          <div className="bg-gradient-to-b from-gray-50 via-amber-50/40 to-gray-200/60">
+          <div className="bg-gradient-to-b from-gray-100 via-amber-100/70 via-yellow-50/60 to-gray-300/80">
             <Services />
             <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
               <FareEstimator />
