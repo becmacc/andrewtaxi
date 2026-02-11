@@ -53,7 +53,8 @@ export const Hero: React.FC = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center md:text-left pt-16">
         <div className="md:max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2 mb-4 animate-fade-in-up">
+          {/* Badges - Stack on mobile, inline on desktop */}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-center sm:items-center gap-2 mb-4 animate-fade-in-up">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-taxi-yellow text-gray-900 rounded-full font-bold text-xs tracking-wider uppercase">
               <Star className="w-3 h-3 fill-gray-900" />
               5-Star Rated on Google
@@ -66,7 +67,7 @@ export const Hero: React.FC = () => {
             </div>
             <button
               onClick={() => setIsSupportChatOpen(true)}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 text-xs font-semibold uppercase tracking-wider transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:shadow-lg w-auto"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               Live Support
