@@ -8,7 +8,7 @@ const FEATURE_IMAGES = [
     alt: 'Professional taxi service in Lebanon'
   },
   {
-    src: '/AndrewLogo2 (1).jpeg',
+    src: '/andrew-vehicle.jpeg',
     alt: 'Andrew\'s Taxi vehicle'
   },
   {
