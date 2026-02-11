@@ -22,7 +22,7 @@ export const Header: React.FC = () => {
   return (
     <header 
       className={`fixed w-full z-40 transition-all duration-300 ${
-        isScrolled || isOpen ? 'bg-white shadow-md py-1.5' : 'bg-transparent py-3'
+        isScrolled || isOpen ? 'bg-gradient-to-r from-gray-50 via-amber-50/60 to-gray-100 shadow-lg py-1.5' : 'bg-transparent py-3'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,13 +73,13 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Mobile Nav */}
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'} bg-white border-t`}>
+      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'} bg-gradient-to-b from-amber-50/60 to-gray-100 border-t border-amber-200/50`}>
         <div className="px-4 pt-2 pb-4 space-y-1">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
               href={item.href}
-              className="block px-3 py-2.5 rounded-md text-sm font-bold uppercase tracking-wide text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2.5 rounded-md text-sm font-bold uppercase tracking-wide text-gray-700 hover:text-gray-900 hover:bg-amber-100/50"
               onClick={() => setIsOpen(false)}
             >
               {item.label}
