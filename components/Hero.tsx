@@ -77,16 +77,22 @@ export const Hero: React.FC = () => {
       {/* Background Images with Overlay */}
       <div className="absolute inset-0 z-0">
         {HERO_SLIDES.map((slide, idx) => (
-          <img
+          <div
             key={idx}
-            src={slide.image}
-            alt="Hero background"
-            className={`absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-1000 ${
-              idx === slideIndex ? 'opacity-40' : 'opacity-0'
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              idx === slideIndex ? 'opacity-100' : 'opacity-0'
             }`}
-          />
+            style={{ pointerEvents: 'none' }}
+          >
+            <img
+              src={slide.image}
+              alt="Hero background"
+              className="w-full h-full object-cover opacity-40"
+              style={{ pointerEvents: 'none' }}
+            />
+          </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent" style={{ pointerEvents: 'none' }}></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center md:text-left pt-16">
