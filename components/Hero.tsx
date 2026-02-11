@@ -73,22 +73,19 @@ export const Hero: React.FC = () => {
   const currentSlide = HERO_SLIDES[slideIndex];
 
   return (
-    <div classkey={`title-${slideIndex}`} className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6 animate-fade-in-up">
-            {currentSlide.title} <br className="hidden md:block" />
-            <span className="text-taxi-yellow">{currentSlide.titleHighlight}</span>
-          </h1>
-          <p key={`desc-${slideIndex}`} className="text-lg md:text-xl text-gray-200 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed animate-fade-in-up">
-            {currentSlide.description}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <button
-              onClick={() => setIsSupportChatOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 text-base font-bold transition-all shadow-lg hover:shadow-xl"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Live Support
-            </b
+    <div className="relative bg-gray-900 h-[90vh] min-h-[600px] flex items-center overflow-hidden">
+      {/* Background Images with Overlay */}
+      <div className="absolute inset-0 z-0">
+        {HERO_SLIDES.map((slide, idx) => (
+          <img
+            key={idx}
+            src={slide.image}
+            alt="Hero background"
+            className={`absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-1000 ${
+              idx === slideIndex ? 'opacity-40' : 'opacity-0'
+            }`}
+          />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
       </div>
 
@@ -114,19 +111,22 @@ export const Hero: React.FC = () => {
               Live Support
             </button>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
-            Reliable Rides, <br className="hidden md:block" />
-            <span className="text-taxi-yellow">Every Time.</span>
+          <h1 key={`title-${slideIndex}`} className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+            {currentSlide.title} <br className="hidden md:block" />
+            <span className="text-taxi-yellow">{currentSlide.titleHighlight}</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
-            Reliable airport transfers, comfortable city rides, and professional drivers 24/7. Skip the stress and book instantly on WhatsApp.
+          <p key={`desc-${slideIndex}`} className="text-lg md:text-xl text-gray-200 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+            {currentSlide.description}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-            <Button onClick={openChatbot} variant="whatsapp" className="gap-2">
+            <button
+              onClick={() => setIsSupportChatOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 text-base font-bold transition-all shadow-lg hover:shadow-xl"
+            >
               <MessageCircle className="w-5 h-5" />
-              Book on WhatsApp
-            </Button>
+              Live Support
+            </button>
             <Button href="#fare-estimator" variant="hero">
               Fare Estimator
             </Button>
