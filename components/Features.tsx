@@ -10,10 +10,6 @@ const FEATURE_IMAGES = [
   {
     src: '/andrew-vehicle.jpeg',
     alt: 'Andrew\'s Taxi vehicle'
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?q=80&w=2070&auto=format&fit=crop',
-    alt: 'Reliable airport transfers'
   }
 ];
 
