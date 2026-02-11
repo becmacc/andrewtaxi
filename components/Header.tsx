@@ -22,7 +22,7 @@ export const Header: React.FC = () => {
   return (
     <header 
       className={`fixed w-full z-40 transition-all duration-300 ${
-        isScrolled || isOpen ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
+        isScrolled || isOpen ? 'bg-white shadow-md py-1.5' : 'bg-transparent py-3'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,18 +30,17 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <a href="#" className="flex items-center">
-               {/* Increased height for image logo visibility */}
-               <Logo className="h-20 md:h-20" variant={isScrolled || isOpen ? 'dark' : 'light'} />
+               <Logo className="h-16 md:h-16" variant={isScrolled || isOpen ? 'dark' : 'light'} />
             </a>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className={`text-sm font-medium hover:text-taxi-yellow transition-colors ${
+                className={`text-xs font-bold uppercase tracking-wide hover:text-taxi-yellow transition-colors ${
                   isScrolled ? 'text-gray-700' : 'text-white'
                 }`}
               >
@@ -50,10 +49,10 @@ export const Header: React.FC = () => {
             ))}
             <button
               onClick={() => setIsSupportChatOpen(true)}
-              className="bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 px-5 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2"
+              className="bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors shadow-sm flex items-center gap-1.5"
             >
-              <MessageCircle className="w-4 h-4" />
-              Live Support
+              <MessageCircle className="w-3.5 h-3.5" />
+              Support
             </button>
           </nav>
 
@@ -75,27 +74,27 @@ export const Header: React.FC = () => {
 
       {/* Mobile Nav */}
       <div className={`md:hidden ${isOpen ? 'block' : 'hidden'} bg-white border-t`}>
-        <div className="px-4 pt-2 pb-6 space-y-1">
+        <div className="px-4 pt-2 pb-4 space-y-1">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
               href={item.href}
-              className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-3 py-2.5 rounded-md text-sm font-bold uppercase tracking-wide text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               onClick={() => setIsOpen(false)}
             >
               {item.label}
             </a>
           ))}
-          <div className="pt-4">
+          <div className="pt-3">
             <button
               onClick={() => {
                 setIsSupportChatOpen(true);
                 setIsOpen(false);
               }}
-              className="flex items-center justify-center gap-2 w-full bg-taxi-yellow text-gray-900 px-4 py-3 rounded-lg font-semibold hover:bg-taxi-yellow/90 transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-taxi-yellow text-gray-900 px-4 py-2.5 rounded-lg font-bold text-sm uppercase tracking-wide hover:bg-taxi-yellow/90 transition-colors"
             >
-              <MessageCircle className="w-5 h-5" />
-              Live Support
+              <MessageCircle className="w-4 h-4" />
+              Support
             </button>
           </div>
         </div>
