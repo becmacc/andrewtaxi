@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <a href="#" className="flex items-center">
-               <Logo className="h-16 md:h-16" variant={isScrolled || isOpen ? 'dark' : 'light'} />
+               <Logo className="h-16 md:h-24" variant={isScrolled || isOpen ? 'dark' : 'light'} />
             </a>
           </div>
 

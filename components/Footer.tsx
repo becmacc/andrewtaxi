@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
           {/* Brand */}
           <div>
             <div className="mb-6">
-              <Logo className="h-16" variant="light" />
+              <Logo className="h-16 md:h-24" variant="light" />
             </div>
             <p className="text-gray-400 mb-6 max-w-xs">
               Your trusted partner for safe, reliable, and professional transportation across Lebanon. Available 24/7.
