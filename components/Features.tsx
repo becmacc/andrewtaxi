@@ -37,7 +37,7 @@ export const Features: React.FC = () => {
   const highlightMeta = highlightMode === 'quote' ? quote?.location : undefined;
 
   return (
-    <section id="features" className="py-12 md:py-16 bg-white scroll-mt-24">
+    <section id="features" className="py-12 md:py-16 scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
           

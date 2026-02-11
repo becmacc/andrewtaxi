@@ -4,7 +4,7 @@ import { Star } from 'lucide-react';
 
 export const Testimonials: React.FC = () => {
   return (
-    <section id="testimonials" className="py-20 bg-white scroll-mt-24">
+    <section id="testimonials" className="py-20 scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Section with Google Trust Indicators */}

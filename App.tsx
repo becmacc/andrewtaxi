@@ -32,13 +32,16 @@ function App() {
         <Header />
         <main>
           <Hero />
-          <Services />
-          <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
-            <FareEstimator />
-          </Suspense>
-          <Features />
-          <HowItWorks />
-          <Testimonials />
+          {/* Gradient wrapper for content sections - creates visual depth and contrast */}
+          <div className="bg-gradient-to-b from-gray-50 via-amber-50/40 to-gray-200/60">
+            <Services />
+            <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
+              <FareEstimator />
+            </Suspense>
+            <Features />
+            <HowItWorks />
+            <Testimonials />
+          </div>
         </main>
         <Footer />
         <WhatsAppButton />
