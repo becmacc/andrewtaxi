@@ -251,8 +251,15 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose, onOpe
 
     try {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey) {
-        throw new Error('OpenAI API key not configured');
+      if (!apiKey || apiKey === 'your_openai_api_key_here') {
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: '⚠️ AI chat is currently unavailable. Please use the quick actions above or contact us directly on WhatsApp for immediate assistance! 💬',
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        setIsLoading(false);
+        return;
       }
 
       const systemPrompt = `You are a friendly and professional customer support assistant for Andrew's Taxi, Lebanon's premier taxi service. Your goal is to provide helpful, warm, and efficient assistance.
