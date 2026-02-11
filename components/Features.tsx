@@ -1,14 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { FEATURES, TESTIMONIALS } from '../constants';
 
+// Feature images that alternate
+const FEATURE_IMAGES = [
+  {
+    src: '/featured.jpeg',
+    alt: 'Professional taxi service in Lebanon'
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop',
+    alt: 'Comfortable ride experience'
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?q=80&w=2070&auto=format&fit=crop',
+    alt: 'Reliable airport transfers'
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop',
+    alt: 'Safe and professional drivers'
+  }
+];
+
 export const Features: React.FC = () => {
   const [highlightMode, setHighlightMode] = useState<'quote' | 'value'>('quote');
   const [highlightIndex, setHighlightIndex] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setHighlightMode(prev => (prev === 'quote' ? 'value' : 'quote'));
       setHighlightIndex(prev => prev + 1);
+      setImageIndex(prev => (prev + 1) % FEATURE_IMAGES.length);
     }, 6000);
 
     return () => window.clearInterval(intervalId);
@@ -29,12 +51,17 @@ export const Features: React.FC = () => {
           
           <div className="mb-12 lg:mb-0">
              <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[500px] group">
-               <img 
-                 src="/featured.jpeg" 
-                 alt="Passenger enjoying a comfortable and safe ride"
-                 loading="lazy"
-                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-               />
+               {FEATURE_IMAGES.map((image, idx) => (
+                 <img 
+                   key={idx}
+                   src={image.src} 
+                   alt={image.alt}
+                   loading="lazy"
+                   className={`absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-all duration-1000 ${
+                     idx === imageIndex ? 'opacity-100' : 'opacity-0'
+                   }`}
+                 />
+               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-6 sm:p-8">
                 <div key={`${highlightMode}-${highlightIndex}`} className="text-white bg-black/60 backdrop-blur-sm rounded-xl p-4 sm:p-5 max-w-xl">
                   <p className="text-xs uppercase tracking-widest text-taxi-yellow font-bold mb-2">{highlightTitle}</p>
