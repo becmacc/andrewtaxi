@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, MessageCircle } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { Logo } from './Logo';
 import { useChatbot } from '../App';
+import { SupportChat } from './SupportChat';
 
 export const Header: React.FC = () => {
   const { openChatbot } = useChatbot();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSupportChatOpen, setIsSupportChatOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,11 +49,11 @@ export const Header: React.FC = () => {
               </a>
             ))}
             <button
-              onClick={openChatbot}
-              className="bg-[#25D366] hover:bg-[#20bd5a] text-white px-5 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2"
+              onClick={() => setIsSupportChatOpen(true)}
+              className="bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 px-5 py-2 rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2"
             >
-              <Phone className="w-4 h-4" />
-              Book on WhatsApp
+              <MessageCircle className="w-4 h-4" />
+              Live Support
             </button>
           </nav>
 
@@ -87,17 +89,24 @@ export const Header: React.FC = () => {
           <div className="pt-4">
             <button
               onClick={() => {
-                openChatbot();
+                setIsSupportChatOpen(true);
                 setIsOpen(false);
               }}
-              className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white px-4 py-3 rounded-lg font-semibold hover:bg-[#20bd5a] transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-taxi-yellow text-gray-900 px-4 py-3 rounded-lg font-semibold hover:bg-taxi-yellow/90 transition-colors"
             >
-              <Phone className="w-5 h-5" />
-              Book on WhatsApp
+              <MessageCircle className="w-5 h-5" />
+              Live Support
             </button>
           </div>
         </div>
       </div>
+
+      {/* Support Chat Modal */}
+      <SupportChat
+        isOpen={isSupportChatOpen}
+        onClose={() => setIsSupportChatOpen(false)}
+        onOpenBooking={openChatbot}
+      />
     </header>
   );
 };

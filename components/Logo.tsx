@@ -18,6 +18,7 @@ export const Logo = React.memo(({ className = "h-12", variant = 'dark' }: LogoPr
         alt="Andrew's Taxi" 
         className={`${className} w-auto object-contain`}
         decoding="async"
+        fetchPriority="high"
         onError={() => setImgError(true)}
       />
     );

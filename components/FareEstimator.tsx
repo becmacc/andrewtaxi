@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Calculator, MessageCircle, AlertCircle, Loader2, RefreshCw, Calendar, ArrowRight } from 'lucide-react';
 import { GOOGLE_MAPS_API_KEY, PRICING_CONFIG, PHONE_NUMBER_CLEAN } from '../constants';
+import { useChatbot } from '../App';
 
 // Declare google types to avoid TS errors
 declare global {
@@ -23,10 +24,15 @@ interface EstimateResult {
 }
 
 export const FareEstimator: React.FC = () => {
+  const { openChatbot } = useChatbot();
   const [pickup, setPickup] = useState<LocationState>({ address: '', placeId: '' });
   const [dropoff, setDropoff] = useState<LocationState>({ address: '', placeId: '' });
   const [tripType, setTripType] = useState<'one-way' | 'round-trip'>('one-way');
   const [dateTime, setDateTime] = useState('');
+  const [waitTimeMins, setWaitTimeMins] = useState(0);
+  const [carsCount, setCarsCount] = useState(1);
+  const [passengerGroup, setPassengerGroup] = useState<'1-4' | '4+'>('1-4');
+  const [vehicleType, setVehicleType] = useState<'car' | 'suv'>('car');
   const [estimate, setEstimate] = useState<EstimateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -191,25 +197,23 @@ export const FareEstimator: React.FC = () => {
   };
 
   const handleWhatsAppClick = () => {
-    if (!estimate) return;
-
-    const message = `Hi Andrew's Taxi, I want to book a ride.
-Pickup: ${pickup.address}
-Drop-off: ${dropoff.address}
-Trip: ${tripType === 'one-way' ? 'One-way' : 'Round trip'}
-Distance: ${estimate.distanceKm} km
-Estimate: $${estimate.priceLow}–$${estimate.priceHigh}
-When: ${dateTime || 'Not specified'}`;
-
-    const url = `https://wa.me/${PHONE_NUMBER_CLEAN}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    openChatbot();
   };
 
   const handleManualWhatsApp = () => {
-     const message = `Hi Andrew's Taxi, I want to book a ride.`;
-     const url = `https://wa.me/${PHONE_NUMBER_CLEAN}?text=${encodeURIComponent(message)}`;
-     window.open(url, '_blank');
+    openChatbot();
   }
+
+  const waitHours = Math.round(waitTimeMins / 60);
+
+  const handleCustomRequest = () => {
+    const pickupText = pickup.address ? pickup.address : 'Not provided';
+    const dropoffText = dropoff.address ? dropoff.address : 'Not provided';
+    const waitText = tripType === 'round-trip' ? `${waitHours} hr` : 'N/A';
+    const message = `*Custom Ride Request*\n\nPickup: ${pickupText}\nDropoff: ${dropoffText}\nCars: ${carsCount}\nPassengers: ${passengerGroup}\nVehicle: ${vehicleType.toUpperCase()}\nTrip type: ${tripType}\nWait time: ${waitText}\nWhen: ${dateTime || 'Not provided'}`;
+    const whatsappMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}?text=${whatsappMessage}`, '_blank');
+  };
 
   return (
     <section id="fare-estimator" className="py-20 bg-gray-50 border-t border-gray-200 scroll-mt-24">
@@ -291,7 +295,7 @@ When: ${dateTime || 'Not specified'}`;
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Trip Type</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">
                   <button
-                    onClick={() => { setTripType('one-way'); setEstimate(null); }}
+                    onClick={() => { setTripType('one-way'); setEstimate(null); setWaitTimeMins(0); }}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${tripType === 'one-way' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     One-way
@@ -315,13 +319,35 @@ When: ${dateTime || 'Not specified'}`;
                   <input
                     type="text"
                     value={dateTime}
-                    onChange={(e) => setDateTime(e.target.value)}
+                    onChange={(e) => { setDateTime(e.target.value); setEstimate(null); }}
                     placeholder="e.g. Tomorrow at 10 AM"
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm"
                   />
                 </div>
               </div>
             </div>
+
+            {tripType === 'round-trip' && (
+              <div className="mb-8">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Estimated wait time (hours)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={4}
+                    step={1}
+                    value={waitHours}
+                    onChange={(e) => {
+                      const value = Math.max(0, Math.min(4, Number(e.target.value)));
+                      setWaitTimeMins(Number.isNaN(value) ? 0 : value * 60);
+                      setEstimate(null);
+                    }}
+                    className="block w-full pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">First 50 min free. Extra wait time confirmed on WhatsApp.</p>
+              </div>
+            )}
 
             {error && !error.includes("restricted") && (
               <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 text-sm flex flex-col gap-2">
@@ -370,6 +396,14 @@ When: ${dateTime || 'Not specified'}`;
                        <div className="w-1.5 h-1.5 rounded-full bg-taxi-yellow"></div>
                        Traffic, tolls, and waiting time may affect final price.
                     </div>
+                    {tripType === 'round-trip' && (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <div className="w-1.5 h-1.5 rounded-full bg-taxi-yellow"></div>
+                        {waitTimeMins > 50
+                          ? `Wait time ${waitHours} hr. First 50 min free; extra time confirmed on WhatsApp.`
+                          : `Wait time ${waitHours} hr. First 50 min free.`}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -398,6 +432,96 @@ When: ${dateTime || 'Not specified'}`;
         <p className="text-center text-xs text-gray-400 mt-8">
           *Estimates are calculated using Google Maps standard driving routes. Minimum fare of $6.00 applies to all trips.
         </p>
+
+        <div className="mt-10 bg-white border border-gray-200 rounded-2xl shadow-md p-6 md:p-8">
+          <div className="text-center">
+            <h3 className="text-2xl font-extrabold text-gray-900">Custom Request</h3>
+            <p className="mt-2 text-gray-600">Tell us what you need and we will contact you directly.</p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-taxi-yellow/15 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-taxi-dark" fill="currentColor" aria-hidden="true">
+                    <path d="M7 4h10l3 6v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1H9v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7l3-6zm1.5 2L7 9h10l-1.5-3h-7zM6 11v3h2v-3H6zm10 0v3h2v-3h-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Vehicle Type</p>
+                  <p className="text-xs text-gray-500">Choose car or SUV</p>
+                </div>
+              </div>
+              <select
+                value={vehicleType}
+                onChange={(e) => setVehicleType(e.target.value as 'car' | 'suv')}
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm bg-white"
+              >
+                <option value="car">Car</option>
+                <option value="suv">SUV</option>
+              </select>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-taxi-yellow/15 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-taxi-dark" fill="currentColor" aria-hidden="true">
+                    <path d="M16 11c1.66 0 3 1.34 3 3v3h-2v-3a1 1 0 0 0-2 0v3h-2v-3c0-1.66 1.34-3 3-3zM8 11c1.66 0 3 1.34 3 3v3H9v-3a1 1 0 0 0-2 0v3H5v-3c0-1.66 1.34-3 3-3zM12 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Passengers</p>
+                  <p className="text-xs text-gray-500">Let us know group size</p>
+                </div>
+              </div>
+              <select
+                value={passengerGroup}
+                onChange={(e) => setPassengerGroup(e.target.value as '1-4' | '4+')}
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm bg-white"
+              >
+                <option value="1-4">1-4 passengers</option>
+                <option value="4+">4+ passengers</option>
+              </select>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-taxi-yellow/15 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-taxi-dark" fill="currentColor" aria-hidden="true">
+                    <path d="M4 6h9a3 3 0 0 1 3 3v1h4v8h-2v-2H6v2H4V6zm2 8h10v-2a1 1 0 0 0-1-1H6v3zm9-6a1 1 0 0 0-1-1H6v2h9V8zm2 6h2v-2h-2v2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Number of Cars</p>
+                  <p className="text-xs text-gray-500">Book multiple cars</p>
+                </div>
+              </div>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                step={1}
+                value={carsCount}
+                onChange={(e) => {
+                  const value = Math.max(1, Math.min(5, Number(e.target.value)));
+                  setCarsCount(Number.isNaN(value) ? 1 : value);
+                }}
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <button
+              onClick={handleCustomRequest}
+              className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Contact Us on WhatsApp
+            </button>
+            <p className="text-xs text-gray-500">We will contact you directly for special requests.</p>
+          </div>
+        </div>
       </div>
     </section>
   );

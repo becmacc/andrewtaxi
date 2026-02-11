@@ -1,6 +1,6 @@
 import React from 'react';
 import { Phone, Mail, MapPin, Facebook, Instagram, Map } from 'lucide-react';
-import { PHONE_NUMBER, EMAIL, GOOGLE_MAPS_LINK } from '../constants';
+import { PHONE_NUMBER, EMAIL, GOOGLE_MAPS_LINK, FACEBOOK_LINK, INSTAGRAM_LINK } from '../constants';
 import { Logo } from './Logo';
 import { useChatbot } from '../App';
 
@@ -22,11 +22,11 @@ export const Footer: React.FC = () => {
               Your trusted partner for safe, reliable, and professional transportation across Lebanon. Available 24/7.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href={FACEBOOK_LINK} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">Facebook</span>
                 <Facebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href={INSTAGRAM_LINK} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-6 w-6" />
               </a>

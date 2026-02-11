@@ -8,6 +8,8 @@ export const WHATSAPP_LINK = `https://wa.me/${PHONE_NUMBER_CLEAN}?text=${encodeU
 export const EMAIL = "andrewstaxilb@gmail.com";
 export const GOOGLE_MAPS_LINK = "https://share.google/1JkyUvwWTwvJ72SxR";
 export const GOOGLE_REVIEWS_LINK = "https://share.google/1JkyUvwWTwvJ72SxR"; // Using the provided share link
+export const FACEBOOK_LINK = "https://www.facebook.com/andrwesTaxi/";
+export const INSTAGRAM_LINK = "https://www.instagram.com/andrewtaxi6/";
 
 // --- FARE ESTIMATOR CONFIGURATION ---
 export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';

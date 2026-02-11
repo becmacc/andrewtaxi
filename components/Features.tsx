@@ -1,7 +1,27 @@
-import React from 'react';
-import { FEATURES } from '../constants';
+import React, { useEffect, useState } from 'react';
+import { FEATURES, TESTIMONIALS } from '../constants';
 
 export const Features: React.FC = () => {
+  const [highlightMode, setHighlightMode] = useState<'quote' | 'value'>('quote');
+  const [highlightIndex, setHighlightIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setHighlightMode(prev => (prev === 'quote' ? 'value' : 'quote'));
+      setHighlightIndex(prev => prev + 1);
+    }, 6000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const quote = TESTIMONIALS.length ? TESTIMONIALS[highlightIndex % TESTIMONIALS.length] : null;
+  const value = FEATURES.length ? FEATURES[highlightIndex % FEATURES.length] : null;
+
+  const highlightTitle = highlightMode === 'quote' ? 'Customer Quote' : 'Core Value';
+  const highlightHeading = highlightMode === 'quote' ? quote?.name : value?.title;
+  const highlightText = highlightMode === 'quote' ? quote?.content : value?.description;
+  const highlightMeta = highlightMode === 'quote' ? quote?.location : undefined;
+
   return (
     <section id="features" className="py-20 bg-white scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,11 +36,15 @@ export const Features: React.FC = () => {
                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-6 sm:p-8">
-                <div className="text-white bg-black/60 backdrop-blur-sm rounded-xl p-4 sm:p-5 max-w-xl">
-                    <p className="font-bold text-xl mb-2 text-taxi-yellow">Ride with Confidence</p>
-                    <p className="font-medium text-gray-100 text-lg">“Experience the comfort, punctuality, and safety you deserve on every journey.”</p>
-                  </div>
-               </div>
+                <div key={`${highlightMode}-${highlightIndex}`} className="text-white bg-black/60 backdrop-blur-sm rounded-xl p-4 sm:p-5 max-w-xl">
+                  <p className="text-xs uppercase tracking-widest text-taxi-yellow font-bold mb-2">{highlightTitle}</p>
+                  <p className="font-bold text-xl mb-2 text-white">{highlightHeading || 'Ride with Confidence'}</p>
+                  <p className="font-medium text-gray-100 text-lg">{highlightText || 'Experience the comfort, punctuality, and safety you deserve on every journey.'}</p>
+                  {highlightMeta && (
+                    <p className="text-xs text-gray-300 mt-3">{highlightMeta}</p>
+                  )}
+                </div>
+              </div>
              </div>
           </div>
 

@@ -1,11 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from './Button';
-import { WHATSAPP_LINK } from '../constants';
-import { MessageCircle, Star } from 'lucide-react';
+import { CloudSun, MessageCircle, Star } from 'lucide-react';
 import { useChatbot } from '../App';
+import { SupportChat } from './SupportChat';
 
 export const Hero: React.FC = () => {
   const { openChatbot } = useChatbot();
+  const [weather, setWeather] = useState<{ temp: number; description: string } | null>(null);
+  const [weatherError, setWeatherError] = useState(false);
+  const [isSupportChatOpen, setIsSupportChatOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchWeather = async () => {
+      try {
+        const response = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=33.8938&longitude=35.5018&current_weather=true'
+        );
+        if (!response.ok) throw new Error('Weather request failed');
+        const data = await response.json();
+        if (!isMounted) return;
+        const temp = Math.round(data.current_weather?.temperature ?? 0);
+        const weatherCode = data.current_weather?.weathercode ?? 0;
+        const description = weatherCode === 0 ? 'Clear' : weatherCode < 3 ? 'Partly Cloudy' : weatherCode < 50 ? 'Cloudy' : weatherCode < 70 ? 'Rainy' : 'Stormy';
+        setWeather({ temp, description });
+        setWeatherError(false);
+      } catch (error) {
+        if (!isMounted) return;
+        setWeatherError(true);
+      }
+    };
+
+    fetchWeather();
+    const intervalId = window.setInterval(fetchWeather, 10 * 60 * 1000);
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   return (
     <div className="relative bg-gray-900 h-[90vh] min-h-[600px] flex items-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -20,9 +53,24 @@ export const Hero: React.FC = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center md:text-left pt-16">
         <div className="md:max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-taxi-yellow text-gray-900 rounded-full font-bold text-xs tracking-wider uppercase mb-4 animate-fade-in-up">
-            <Star className="w-3 h-3 fill-gray-900" />
-            5-Star Rated on Google
+          <div className="flex flex-wrap items-center gap-2 mb-4 animate-fade-in-up">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-taxi-yellow text-gray-900 rounded-full font-bold text-xs tracking-wider uppercase">
+              <Star className="w-3 h-3 fill-gray-900" />
+              5-Star Rated on Google
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-gray-100 text-xs font-semibold uppercase tracking-wider">
+              <CloudSun className="w-3.5 h-3.5 text-taxi-yellow" />
+              {weather && !weatherError
+                ? `Beirut ${weather.temp}°C · ${weather.description}`
+                : 'Beirut Weather'}
+            </div>
+            <button
+              onClick={() => setIsSupportChatOpen(true)}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-taxi-yellow hover:bg-taxi-yellow/90 text-gray-900 text-xs font-semibold uppercase tracking-wider transition-all shadow-md hover:shadow-lg"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Live Support
+            </button>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
             Reliable Rides, <br className="hidden md:block" />
@@ -37,8 +85,8 @@ export const Hero: React.FC = () => {
               <MessageCircle className="w-5 h-5" />
               Book on WhatsApp
             </Button>
-            <Button href="#services" variant="hero">
-              Explore Services
+            <Button href="#fare-estimator" variant="hero">
+              Fare Estimator
             </Button>
           </div>
 
@@ -58,6 +106,12 @@ export const Hero: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <SupportChat 
+        isOpen={isSupportChatOpen} 
+        onClose={() => setIsSupportChatOpen(false)}
+        onOpenBooking={openChatbot}
+      />
     </div>
   );
 };
