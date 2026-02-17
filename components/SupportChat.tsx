@@ -29,10 +29,30 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose, onOpe
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const recognitionInitialized = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      // Abort any pending API requests
+      abortControllerRef.current?.abort();
+      // Cleanup speech recognition
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
+  }, []);
 
   const initializeSpeechRecognition = () => {
     if (recognitionInitialized.current) return true;
@@ -252,6 +272,7 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose, onOpe
     try {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       if (!apiKey || apiKey === 'your_openai_api_key_here') {
+        if (!isMountedRef.current) return;
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -352,6 +373,9 @@ CONTACT:
 
 Answer questions professionally and concisely. Guide users to the right website feature for their needs. For bookings, encourage using the chatbot or WhatsApp button.`;
 
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -368,6 +392,7 @@ Answer questions professionally and concisely. Guide users to the right website 
           temperature: 0.8,
           max_tokens: 250,
         }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -375,6 +400,10 @@ Answer questions professionally and concisely. Guide users to the right website 
       }
 
       const data = await response.json();
+      
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) return;
+      
       let content = data.choices[0]?.message?.content || 'Sorry, I could not process that.';
       
       // Check for action commands
@@ -393,7 +422,14 @@ Answer questions professionally and concisely. Guide users to the right website 
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
+      // Don't log abort errors
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Chat error:', error);
+      }
+      
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -401,7 +437,9 @@ Answer questions professionally and concisely. Guide users to the right website 
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
