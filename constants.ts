@@ -1,8 +1,8 @@
 import { Plane, Car, Award, Clock, MapPin, ShieldCheck, Phone } from 'lucide-react';
 import { Service, Testimonial, Feature, NavigationItem } from './types';
 
-export const PHONE_NUMBER = "+961 76 301 019";
-export const PHONE_NUMBER_CLEAN = "96176301019";
+export const PHONE_NUMBER = "+961 3 301 019";
+export const PHONE_NUMBER_CLEAN = "9613301019";
 export const WHATSAPP_MESSAGE = "Hello Andrew's Taxi, I would like to book a ride.";
 export const WHATSAPP_LINK = `https://wa.me/${PHONE_NUMBER_CLEAN}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 export const EMAIL = "andrewstaxilb@gmail.com";

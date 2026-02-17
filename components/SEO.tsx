@@ -9,7 +9,7 @@ interface SEOProps {
 
 export const SEO: React.FC<SEOProps> = ({ 
   title = "Andrew's Taxi - Reliable Taxi Service in Lebanon | 24/7 Airport Transfers & City Rides",
-  description = "Professional taxi service in Beirut, Lebanon. Book reliable airport transfers, city rides, and 24/7 transportation. Fixed pricing, clean vehicles, experienced drivers. Call +961 76 301 019.",
+  description = "Professional taxi service in Beirut, Lebanon. Book reliable airport transfers, city rides, and 24/7 transportation. Fixed pricing, clean vehicles, experienced drivers. Call +961 3 301 019.",
   image = "https://andrewtaxi.com/featured.jpeg",
   url = "https://andrewtaxi.com"
 }) => {
@@ -73,7 +73,7 @@ export const SEO: React.FC<SEOProps> = ({
       "url": "https://andrewtaxi.com",
       "logo": "https://andrewtaxi.com/logo.png",
       "image": "https://andrewtaxi.com/featured.jpeg",
-      "telephone": "+96176301019",
+      "telephone": "+9613301019",
       "email": "andrewstaxilb@gmail.com",
       "priceRange": "$$",
       "openingHours": "Mo-Su 00:00-23:59",

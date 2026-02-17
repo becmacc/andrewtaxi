@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, MessageCircle, Mic, MicOff } from 'lucide-react';
+import { PHONE_NUMBER_CLEAN } from '../constants';
 
 interface Message {
   id: string;
@@ -250,7 +251,7 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose, onOpe
         onClose();
         break;
       case 'open_whatsapp':
-        window.open('https://wa.me/96176301019', '_blank');
+        window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}`, '_blank');
         break;
     }
   };
@@ -366,10 +367,10 @@ WHY CHOOSE US:
 - Safe and reliable
 
 CONTACT:
-- WhatsApp: +961 76 301 019 (preferred for booking)
+- WhatsApp: +961 3 301 019 (preferred for booking)
 - Email: andrewstaxilb@gmail.com
-- Direct call: +961 76 301 019
-- Book instantly through our website chatbot
+- Direct call: +961 3 301 019
+- Book instantly through WhatsApp
 
 Answer questions professionally and concisely. Guide users to the right website feature for their needs. For bookings, encourage using the chatbot or WhatsApp button.`;
 

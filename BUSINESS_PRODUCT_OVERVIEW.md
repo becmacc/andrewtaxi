@@ -22,7 +22,7 @@ Andrew's Taxi is a modern, web-based taxi booking platform designed specifically
 
 **Revenue Model:** Direct service fees from completed rides  
 **Customer Acquisition:** Organic search (SEO), social media (Facebook, Instagram), word-of-mouth  
-**Primary Booking Channel:** WhatsApp Business API (+961 76 301 019)  
+**Primary Booking Channel:** WhatsApp Business API (+961 3 301 019)  
 **Secondary Channels:** Direct website interaction, AI support chat
 
 ### 1.2 Target Market
@@ -56,7 +56,7 @@ Andrew's Taxi is a modern, web-based taxi booking platform designed specifically
 **WhatsApp Integration:**
 - Zero-friction booking flow (no app download required)
 - Pre-formatted booking messages with all trip details
-- Direct phone number integration: +961 76 301 019
+- Direct phone number integration: +961 3 301 019
 - Confirmation via WhatsApp chat
 - Real-time driver assignment notifications
 
@@ -335,7 +335,7 @@ Currency: USD (standard in Lebanon)
   "@type": "TaxiService",
   "name": "Andrew's Taxi",
   "description": "Professional taxi service in Beirut, Lebanon",
-  "telephone": "+96176301019",
+  "telephone": "+9613301019",
   "email": "andrewstaxilb@gmail.com",
   "priceRange": "$$",
   "openingHours": "Mo-Su 00:00-23:59",
@@ -765,7 +765,7 @@ Example Trip: 10km city ride
 ## 12. Contact & Business Information
 
 **Company Name:** Andrew's Taxi  
-**Primary Contact:** +961 76 301 019  
+**Primary Contact:** +961 3 301 019  
 **Email:** andrewstaxilb@gmail.com  
 **Website:** https://andrewtaxi.com  
 **Operating Hours:** 24/7, 365 days/year

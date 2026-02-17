@@ -1,10 +1,9 @@
 import React from 'react';
 import { Button } from './Button';
 import { MessageSquare, CalendarCheck, MapPin } from 'lucide-react';
-import { useChatbot } from '../App';
+import { WHATSAPP_LINK } from '../constants';
 
 export const HowItWorks: React.FC = () => {
-  const { openChatbot } = useChatbot();
   return (
     <section id="how-it-works" className="py-12 md:py-20 bg-taxi-dark text-white scroll-mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +45,7 @@ export const HowItWorks: React.FC = () => {
         </div>
 
         <div className="mt-8 md:mt-16 text-center">
-          <Button onClick={openChatbot} variant="whatsapp" className="px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
+          <Button href={WHATSAPP_LINK} external variant="whatsapp" className="px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
             Start Your Booking Now
           </Button>
         </div>

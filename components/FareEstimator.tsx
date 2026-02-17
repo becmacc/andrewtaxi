@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Calculator, MessageCircle, AlertCircle, Loader2, RefreshCw, Calendar, ArrowRight } from 'lucide-react';
 import { GOOGLE_MAPS_API_KEY, PRICING_CONFIG, PHONE_NUMBER_CLEAN } from '../constants';
-import { useChatbot } from '../App';
 
 // Declare google types to avoid TS errors
 declare global {
@@ -24,7 +23,6 @@ interface EstimateResult {
 }
 
 export const FareEstimator: React.FC = () => {
-  const { openChatbot } = useChatbot();
   const [pickup, setPickup] = useState<LocationState>({ address: '', placeId: '' });
   const [dropoff, setDropoff] = useState<LocationState>({ address: '', placeId: '' });
   const [tripType, setTripType] = useState<'one-way' | 'round-trip'>('one-way');
@@ -196,13 +194,42 @@ export const FareEstimator: React.FC = () => {
     );
   };
 
+  const buildWhatsAppLink = (message: string) => {
+    const whatsappMessage = encodeURIComponent(message);
+    return `https://wa.me/${PHONE_NUMBER_CLEAN}?text=${whatsappMessage}`;
+  };
+
+  const buildQuoteMessage = (includeEstimate: boolean) => {
+    const pickupText = pickup.address || 'Not provided';
+    const dropoffText = dropoff.address || 'Not provided';
+    const whenText = dateTime || 'ASAP';
+    const waitText = tripType === 'round-trip' ? `${waitHours} hr` : 'N/A';
+    const estimateText = includeEstimate && estimate
+      ? `$${estimate.priceLow}-$${estimate.priceHigh}`
+      : 'N/A';
+    const distanceText = includeEstimate && estimate
+      ? `${estimate.distanceKm} km`
+      : 'N/A';
+
+    return `*Fare Estimate ${includeEstimate ? 'Booking' : 'Request'}*\n` +
+      `Pickup: ${pickupText}\n` +
+      `Dropoff: ${dropoffText}\n` +
+      `Trip type: ${tripType}\n` +
+      `When: ${whenText}\n` +
+      `Wait time: ${waitText}\n` +
+      `Distance: ${distanceText}\n` +
+      `Estimate: ${estimateText}`;
+  };
+
   const handleWhatsAppClick = () => {
-    openChatbot();
+    const message = buildQuoteMessage(true);
+    window.open(buildWhatsAppLink(message), '_blank');
   };
 
   const handleManualWhatsApp = () => {
-    openChatbot();
-  }
+    const message = buildQuoteMessage(false);
+    window.open(buildWhatsAppLink(message), '_blank');
+  };
 
   const waitHours = Math.round(waitTimeMins / 60);
 
@@ -317,10 +344,9 @@ export const FareEstimator: React.FC = () => {
                     <Calendar className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="text"
+                    type="datetime-local"
                     value={dateTime}
                     onChange={(e) => { setDateTime(e.target.value); setEstimate(null); }}
-                    placeholder="e.g. Tomorrow at 10 AM"
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-taxi-yellow focus:border-taxi-yellow text-sm"
                   />
                 </div>
