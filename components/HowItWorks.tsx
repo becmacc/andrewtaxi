@@ -45,7 +45,16 @@ export const HowItWorks: React.FC = () => {
         </div>
 
         <div className="mt-8 md:mt-16 text-center">
-          <Button href={WHATSAPP_LINK} external variant="whatsapp" className="px-6 md:px-8 py-3 md:py-4 text-base md:text-lg">
+          <Button 
+            href={WHATSAPP_LINK} 
+            external 
+            variant="whatsapp" 
+            className="px-6 md:px-8 py-3 md:py-4 text-base md:text-lg"
+            onClick={() => window.gtag?.('event', 'whatsapp_click', {
+              event_category: 'engagement',
+              event_label: 'how_it_works_cta',
+            })}
+          >
             Start Your Booking Now
           </Button>
         </div>

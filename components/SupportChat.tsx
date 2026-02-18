@@ -251,6 +251,10 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose, onOpe
         onClose();
         break;
       case 'open_whatsapp':
+        window.gtag?.('event', 'whatsapp_click', {
+          event_category: 'engagement',
+          event_label: 'live_support_chat',
+        });
         window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}`, '_blank');
         break;
     }

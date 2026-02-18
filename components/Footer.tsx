@@ -52,6 +52,10 @@ export const Footer: React.FC = () => {
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => window.gtag?.('event', 'whatsapp_click', {
+                    event_category: 'engagement',
+                    event_label: 'footer_book_link',
+                  })}
                   className="w-full flex items-start gap-3 hover:text-white transition-colors group text-left"
                 >
                   <Phone className="w-5 h-5 text-taxi-yellow mt-1 group-hover:scale-110 transition-transform" />

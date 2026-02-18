@@ -223,11 +223,19 @@ export const FareEstimator: React.FC = () => {
 
   const handleWhatsAppClick = () => {
     const message = buildQuoteMessage(true);
+    window.gtag?.('event', 'whatsapp_click', {
+      event_category: 'engagement',
+      event_label: 'fare_estimator_with_quote',
+    });
     window.open(buildWhatsAppLink(message), '_blank');
   };
 
   const handleManualWhatsApp = () => {
     const message = buildQuoteMessage(false);
+    window.gtag?.('event', 'whatsapp_click', {
+      event_category: 'engagement',
+      event_label: 'fare_estimator_manual_request',
+    });
     window.open(buildWhatsAppLink(message), '_blank');
   };
 
@@ -239,6 +247,10 @@ export const FareEstimator: React.FC = () => {
     const waitText = tripType === 'round-trip' ? `${waitHours} hr` : 'N/A';
     const message = `*Custom Ride Request*\n\nPickup: ${pickupText}\nDropoff: ${dropoffText}\nCars: ${carsCount}\nPassengers: ${passengerGroup}\nVehicle: ${vehicleType.toUpperCase()}\nTrip type: ${tripType}\nWait time: ${waitText}\nWhen: ${dateTime || 'Not provided'}`;
     const whatsappMessage = encodeURIComponent(message);
+    window.gtag?.('event', 'whatsapp_click', {
+      event_category: 'engagement',
+      event_label: 'custom_request',
+    });
     window.open(`https://wa.me/${PHONE_NUMBER_CLEAN}?text=${whatsappMessage}`, '_blank');
   };
 

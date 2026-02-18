@@ -593,6 +593,10 @@ export const ChatbotBooking = React.forwardRef<ChatbotRef>((_, ref) => {
     const message = `*Andrew's Taxi Booking Request*\n\n📍 *Pickup:* ${bookingData.pickup}\n📍 *Dropoff:* ${bookingData.dropoff}\n${bookingData.preferences ? `✨ *Preferences:* ${bookingData.preferences}\n` : ''}🕒 *Time:* ${formattedDateTime}\n💰 *Estimated Fare:* $${bookingData.fare?.toFixed(2)}\n\n*Customer Name:* ${bookingData.name}`;
 
     const whatsappMessage = encodeURIComponent(message);
+    window.gtag?.('event', 'whatsapp_click', {
+      event_category: 'engagement',
+      event_label: 'booking_chatbot_confirmation',
+    });
     window.open(`https://wa.me/${PHONE_NUMBER.replace(/\D/g, '')}?text=${whatsappMessage}`, '_blank');
     
     setIsOpen(false);
